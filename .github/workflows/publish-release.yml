@@ -31,9 +31,3 @@ jobs:
         with:
           node-version: 20
       - run: yarn
-      - run: ./scripts/publish.sh
-        env:
-          VERSION: ${{ github.event.inputs.version }}
-          DIST_TAG: 'latest'
-          GITHUB_TOKEN: ${{ steps.app-token.outputs.token }}
-          GITHUB_ACTOR: ${{ github.actor }}
