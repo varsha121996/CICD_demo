@@ -31,7 +31,9 @@ function getFileStream(
       if (res.body) {
         console.log('we fetched file successfully');
         // pipe the image data
-        Readable.fromWeb(new webStream.ReadableStream(res.body)).pipe(readableStream);
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        Readable.fromWeb(res.body).pipe(readableStream);
       } else {
         console.log('we recieved error Empty data found for file');
         readableStream.emit('error', new Error('Empty data found for file'));
