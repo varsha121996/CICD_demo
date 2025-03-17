@@ -12,6 +12,7 @@ function getFileStream(
   isLocal = false
 ): PassThrough | ReadStream {
   if (isLocal) {
+    console.log('local fetch ==>', isLocal);
     // Todo: handle errors
     return createReadStream(filepath);
   }
@@ -28,13 +29,16 @@ function getFileStream(
       }
 
       if (res.body) {
+        console.log('we fetched file successfully');
         // pipe the image data
         Readable.fromWeb(new webStream.ReadableStream(res.body)).pipe(readableStream);
       } else {
+        console.log('we recieved error Empty data found for file');
         readableStream.emit('error', new Error('Empty data found for file'));
       }
     })
     .catch((error: unknown) => {
+      console.log('we recieved ==>', error);
       readableStream.emit('error', error);
     });
 
@@ -46,6 +50,7 @@ function getFileStats(
   strapi: Core.Strapi,
   isLocal = false
 ): Promise<{ size: number }> {
+  console.log('getFileStats is called', filepath, isLocal);
   if (isLocal) {
     return stat(filepath);
   }
@@ -54,6 +59,7 @@ function getFileStats(
       .fetch(filepath)
       .then((res: Response) => {
         if (res.status !== 200) {
+          console.log('failed to get stats');
           reject(new Error(`Request failed with status code ${res.status}`));
           return;
         }
@@ -62,19 +68,22 @@ function getFileStats(
         const stats = {
           size: contentLength ? parseInt(contentLength, 10) : 0,
         };
-
+        console.log('recieved file stats');
         resolve(stats);
       })
       .catch((error: unknown) => {
+        console.log('file stats unknown error');
         reject(error);
       });
   });
 }
 
 async function signFile(file: IFile) {
+  console.log('we call signFile');
   const { provider } = strapi.plugins.upload;
   const { provider: providerName } = strapi.config.get('plugin.upload') as { provider: string };
   const isPrivate = await provider.isPrivate();
+  console.log('is it private ==>', isPrivate);
   if (file?.provider === providerName && isPrivate) {
     const signUrl = async (file: IFile) => {
       const signedUrl = await provider.getSignedUrl(file);
@@ -82,7 +91,9 @@ async function signFile(file: IFile) {
     };
 
     // Sign the original file
+    console.log('signing url');
     await signUrl(file);
+    console.log('signed url');
     // Sign each file format
     if (file.formats) {
       for (const format of Object.keys(file.formats)) {
