@@ -107,9 +107,7 @@ class RemoteStrapiSourceProvider implements ISourceProvider {
 
       await this.#respond(uuid);
     };
-
     this.ws?.once('message', listener);
-
     return stream;
   }
 
@@ -465,6 +463,7 @@ class RemoteStrapiSourceProvider implements ISourceProvider {
   }
 
   async #respond(uuid: string) {
+    console.log('did I send the uuid ?', uuid);
     return new Promise((resolve, reject) => {
       this.ws?.send(JSON.stringify({ uuid }), (e) => {
         if (e) {

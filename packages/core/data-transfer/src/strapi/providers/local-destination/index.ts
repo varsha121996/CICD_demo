@@ -347,7 +347,6 @@ class LocalStrapiDestinationProvider implements IDestinationProvider {
 
           try {
             await strapi.plugin('upload').provider.uploadStream(uploadData);
-
             // if we're not supposed to transfer the associated entities, stop here
             if (!restoreMediaEntitiesContent) {
               return callback();

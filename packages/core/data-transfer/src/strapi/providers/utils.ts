@@ -41,7 +41,6 @@ export const createDispatcher = (
     if (!ws) {
       throw new Error('No websocket connection found');
     }
-
     return new Promise<U | null>((resolve, reject) => {
       const uuid = randomUUID();
       const payload = { ...message, uuid };
@@ -90,12 +89,14 @@ export const createDispatcher = (
           );
         } else if (message.type === 'transfer') {
           const messageToSend = message as Client.TransferMessage;
+          console.log(response);
           reportInfo?.(
             `received response to message action:${messageToSend.action} ${messageToSend.kind === 'step' ? `step:${messageToSend.step}` : ''} uuid:${uuid} sent:${numberOfTimesMessageWasSent}`
           );
         }
         if (response.uuid === uuid) {
           clearInterval(interval);
+          console.log('response ===>', response);
           if (response.error) {
             const message = response.error.message;
             const details = response.error.details?.details as ProviderErrorDetails;

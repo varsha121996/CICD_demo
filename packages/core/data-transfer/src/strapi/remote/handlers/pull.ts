@@ -217,6 +217,7 @@ export const createPullController = handlerControllerFactory<Partial<PullHandler
             await sendBatch();
           }
         } else {
+          this.onInfo(`transfering asset ${id}`);
           await this.confirm({
             type: 'transfer',
             data: [chunk],
@@ -224,6 +225,7 @@ export const createPullController = handlerControllerFactory<Partial<PullHandler
             error: null,
             id,
           });
+          this.onInfo(`transfered asset ${id}`);
         }
       }
 
@@ -248,6 +250,7 @@ export const createPullController = handlerControllerFactory<Partial<PullHandler
       const flushUUID = randomUUID();
 
       await this.createReadableStreamForStep(step);
+      this.onInfo(`started step for ${step} ${flushUUID}`);
       this.flush(step, flushUUID);
 
       return { ok: true, id: flushUUID };
