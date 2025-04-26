@@ -170,7 +170,7 @@ const LinkContent = React.forwardRef<HTMLAnchorElement, LinkContentProps>(
                   })}
                 </Field.Label>
                 <Field.Input
-                  name="url"
+                  name="rel"
                   placeholder={formatMessage({
                     id: 'components.Blocks.popover.link.rel.placeholder',
                     defaultMessage: 'noopener, nofollow, noreferrer',
@@ -189,7 +189,7 @@ const LinkContent = React.forwardRef<HTMLAnchorElement, LinkContentProps>(
                   })}
                 </Field.Label>
                 <Field.Input
-                  name="url"
+                  name="target"
                   placeholder={formatMessage({
                     id: 'components.Blocks.popover.link.target.placeholder',
                     defaultMessage: '_blank, _self, _parent, _top',
