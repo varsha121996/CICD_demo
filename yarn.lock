@@ -9188,6 +9188,7 @@ __metadata:
     "@strapi/typescript-utils": "npm:5.18.0"
     "@strapi/utils": "npm:5.18.0"
     "@types/fs-extra": "npm:11.0.4"
+    "@types/minimatch": "npm:3.0.5"
     chalk: "npm:4.1.2"
     copyfiles: "npm:2.4.1"
     eslint-config-custom: "npm:5.18.0"
@@ -11235,7 +11236,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/minimatch@npm:*, @types/minimatch@npm:^3.0.3":
+"@types/minimatch@npm:*, @types/minimatch@npm:3.0.5, @types/minimatch@npm:^3.0.3":
   version: 3.0.5
   resolution: "@types/minimatch@npm:3.0.5"
   checksum: 10c0/a1a19ba342d6f39b569510f621ae4bbe972dc9378d15e9a5e47904c440ee60744f5b09225bc73be1c6490e3a9c938eee69eb53debf55ce1f15761201aa965f97

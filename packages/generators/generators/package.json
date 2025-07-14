@@ -58,8 +58,12 @@
     "plop": "4.0.1",
     "pluralize": "8.0.0"
   },
+  "resolutions": {
+    "@types/minimatch": "3.0.5"
+  },
   "devDependencies": {
     "@types/fs-extra": "11.0.4",
+    "@types/minimatch": "3.0.5",
     "eslint-config-custom": "5.18.0",
     "tsconfig": "5.18.0"
   },
