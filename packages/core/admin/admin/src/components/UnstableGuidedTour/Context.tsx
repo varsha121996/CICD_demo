@@ -7,6 +7,7 @@ import { usePersistentState } from '../../hooks/usePersistentState';
 import { createContext } from '../Context';
 
 import { type Tours, tours as guidedTours } from './Tours';
+import { migrateLocalStorage } from './utils/migrateLocalStorage';
 
 /* -------------------------------------------------------------------------------------------------
  * GuidedTourProvider
@@ -90,11 +91,15 @@ const UnstableGuidedTourContext = ({
     return acc;
   }, {} as Tour);
 
-  const [tours, setTours] = usePersistentState<State>(STORAGE_KEY, {
+  const [storedState, setTours] = usePersistentState<State>(STORAGE_KEY, {
     tours: initialTourState,
     enabled,
     completedActions: [],
   });
+  // Update stored state to match current tour definitions
+  const tours = React.useMemo(() => {
+    return migrateLocalStorage(storedState, guidedTours);
+  }, [storedState]);
   const [state, dispatch] = React.useReducer(reducer, tours);
 
   // Sync local storage
