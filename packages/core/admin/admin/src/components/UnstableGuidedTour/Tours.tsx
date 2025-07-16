@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Box, Popover, Portal, Flex, Button, FlexProps } from '@strapi/design-system';
+import { Box, Popover, Portal, Button } from '@strapi/design-system';
 import { FormattedMessage } from 'react-intl';
 import { styled } from 'styled-components';
 

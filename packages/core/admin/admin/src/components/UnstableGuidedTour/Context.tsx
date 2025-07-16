@@ -48,6 +48,44 @@ const [GuidedTourProviderImpl, unstableUseGuidedTour] = createContext<{
   dispatch: React.Dispatch<Action>;
 }>('UnstableGuidedTour');
 
+function updateTourStepsBasedOnActions(draft: State, actions: ExtendedCompletedActions): void {
+  const hasAction = (action: string) =>
+    actions.includes(action as ExtendedCompletedActions[number]);
+
+  // Content Type Builder logic
+  const hasSchema = hasAction('didCreateContentTypeSchema');
+  const hasContent = hasAction('didCreateContent');
+
+  if (hasSchema && hasContent) {
+    // Complete contentTypeBuilder when both schema and content are created
+    draft.tours.contentTypeBuilder.currentStep = draft.tours.contentTypeBuilder.length;
+    draft.tours.contentTypeBuilder.isCompleted = true;
+  } else if (hasSchema) {
+    // Set to last step when only schema is created
+    draft.tours.contentTypeBuilder.currentStep = draft.tours.contentTypeBuilder.length - 1;
+  }
+
+  // Content Manager logic
+  const hasApiToken = hasAction('didCreateApiToken');
+
+  if (hasContent && hasApiToken) {
+    // Complete contentManager when both content and API token are created
+    draft.tours.contentManager.currentStep = draft.tours.contentManager.length;
+    draft.tours.contentManager.isCompleted = true;
+  } else if (hasContent) {
+    // Set to last step when only content is created
+    draft.tours.contentManager.currentStep = draft.tours.contentManager.length - 1;
+  }
+
+  // API Tokens logic
+  const hasCopiedApiToken = hasAction('didCopyApiToken');
+
+  if (hasApiToken && hasCopiedApiToken) {
+    // Complete apiTokens when both API token is created and copied
+    draft.tours.apiTokens.currentStep = draft.tours.apiTokens.length;
+  }
+}
+
 function reducer(state: State, action: Action): State {
   return produce(state, (draft) => {
     if (action.type === 'next_step') {
@@ -62,6 +100,7 @@ function reducer(state: State, action: Action): State {
 
     if (action.type === 'set_completed_actions') {
       draft.completedActions = [...new Set([...draft.completedActions, ...action.payload])];
+      updateTourStepsBasedOnActions(draft, action.payload);
     }
 
     if (action.type === 'skip_all_tours') {
@@ -112,4 +151,4 @@ const UnstableGuidedTourContext = ({
 };
 
 export type { Action, State, ValidTourName };
-export { UnstableGuidedTourContext, unstableUseGuidedTour, reducer };
+export { UnstableGuidedTourContext, unstableUseGuidedTour, reducer, updateTourStepsBasedOnActions };
