@@ -844,5 +844,8 @@
   "tours.profile.description": "You can reset the guided tour at any time.",
   "tours.profile.reset": "Reset guided tour",
   "tours.profile.notification.success.reset": "Guided tour reset",
-  "widget.profile.title": "Profile"
+  "widget.profile.title": "Profile",
+  "widget.last-activity.link": "Open Audit Logs",
+  "widget.last-activity.no-activity": "No activity",
+  "widget.last-activity.title": "Last activity"
 }

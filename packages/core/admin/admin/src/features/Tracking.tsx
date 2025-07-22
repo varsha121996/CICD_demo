@@ -186,6 +186,7 @@ export interface EventWithoutProperties {
     | 'willEditStage'
     | 'willFilterEntries'
     | 'willInstallPlugin'
+    | 'willOpenAuditLogDetails'
     | 'willUnpublishEntry'
     | 'willSaveComponent'
     | 'willSaveContentType'
