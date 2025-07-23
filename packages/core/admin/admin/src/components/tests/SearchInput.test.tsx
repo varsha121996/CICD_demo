@@ -46,14 +46,9 @@ describe('SearchInput', () => {
 
     await user.type(getByRole('textbox', { name: 'Search label' }), 'michka');
 
-    await waitFor(
-      () => {
-        expect(new URLSearchParams(getByRole('listitem').textContent ?? '').get('_q')).toBe(
-          'michka'
-        );
-      },
-      { timeout: 1000 }
-    ); // Wait for debounce (500ms) + buffer
+    await waitFor(() => {
+      expect(new URLSearchParams(getByRole('listitem').textContent ?? '').get('_q')).toBe('michka');
+    }); // Wait for debounce (500ms) + buffer
   });
 
   it('should clear value and update query params', async () => {
@@ -74,14 +69,9 @@ describe('SearchInput', () => {
 
     await user.type(getByRole('textbox', { name: 'Search label' }), 'michka');
 
-    await waitFor(
-      () => {
-        expect(new URLSearchParams(getByRole('listitem').textContent ?? '').get('_q')).toBe(
-          'michka'
-        );
-      },
-      { timeout: 600 }
-    );
+    await waitFor(() => {
+      expect(new URLSearchParams(getByRole('listitem').textContent ?? '').get('_q')).toBe('michka');
+    });
 
     await user.click(getByRole('button', { name: 'Clear' }));
 
