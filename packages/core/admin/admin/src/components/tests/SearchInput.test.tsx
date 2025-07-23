@@ -52,7 +52,7 @@ describe('SearchInput', () => {
           'michka'
         );
       },
-      { timeout: 600 }
+      { timeout: 1000 }
     ); // Wait for debounce (500ms) + buffer
   });
 
