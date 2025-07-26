@@ -6,9 +6,16 @@ This document explains how to create and use Guided Tours in the Strapi CMS.
 
 ## Creating tours
 
-To create a tour use the `createTour` factory function. The function takes the name of the tour and an array of steps.
+To create a tour use the `createTour` factory function. The function takes the following arguments:
 
-The `content` key of a step is a render prop that receives `Step` and an object with `state` and `dispatch`.
+- `tourName`: The name of the tour
+- `steps`: An array of steps
+
+Each `step` is an object with the following properties:
+
+- `name`: The name of the step
+- `requiredActions` (optional): An array of actions that must be completed before the step should be displayed.
+- `content`: A render prop that receives `Step` and an object with `state` and `dispatch`.
 
 `Step` has the following composable parts:
 
@@ -24,6 +31,7 @@ const tours = {
   contentManager: createTour('contentManager', [
     {
       name: 'TheFeatureStepName',
+      requiredActions: ['didDoSomethingImportant'],
       content: (Step) => (
         <Step.Root side="right">
           <Step.Title
@@ -42,19 +50,19 @@ const tours = {
 } as const;
 ```
 
-Tours for the CMS are defined in the `packages/core/admin/admin/src/components/UnstableGuidedTour/Tours.tsx` file.
+Tours for the CMS are defined in the `packages/core/admin/admin/src/components/GuidedTour/Tours.tsx` file.
 
-The tours are then passed to the `UnstableGuidedTourContext` provider.
+The tours are then passed to the `GuidedTourContext` provider.
 
 ```tsx
-import { tours } from '../UnstableGuidedTour/Tours';
-import { UnstableGuidedTourContext } from '../UnstableGuidedTour/Context';
+import { tours } from '../GuidedTour/Tours';
+import { GuidedTourContext } from '../GuidedTour/Context';
 
 function App() {
   return (
-    <UnstableGuidedTourContext tours={tours}>
+    <GuidedTourContext tours={tours}>
       <Outlet />
-    </UnstableGuidedTourContext>
+    </GuidedTourContext>
   );
 }
 ```
@@ -76,7 +84,7 @@ The provider derives the tour state. Continuing our example from above, the init
 The tours object is exported from strapi admin and can be accessed anywhere in the CMS. Wrapping an element will anchor the tour tooltip to that element.
 
 ```tsx
-import { tours } from '../UnstableGuidedTour/Tours';
+import { tours } from '../GuidedTour/Tours';
 
 <tours.contentManager.TheFeatureStepName>
   <div>A part of a feature I want to show off<div>
