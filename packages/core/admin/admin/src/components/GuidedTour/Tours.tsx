@@ -1,6 +1,6 @@
 import * as React from 'react';
 
-import { Box, Popover, Portal, Flex, Button } from '@strapi/design-system';
+import { Box, Popover, Portal, Button } from '@strapi/design-system';
 import { FormattedMessage } from 'react-intl';
 import { styled } from 'styled-components';
 
@@ -9,11 +9,11 @@ import { useGetGuidedTourMetaQuery } from '../../services/admin';
 import {
   type State,
   type Action,
-  unstableUseGuidedTour,
+  useGuidedTour,
   ValidTourName,
   ExtendedCompletedActions,
 } from './Context';
-import { Step, createStepComponents } from './Step';
+import { Step, StepCount, createStepComponents } from './Step';
 
 /* -------------------------------------------------------------------------------------------------
  * Tours
@@ -21,11 +21,9 @@ import { Step, createStepComponents } from './Step';
 
 const GotItAction = ({ onClick }: { onClick: () => void }) => {
   return (
-    <Flex justifyContent="end" width="100%">
-      <Button onClick={onClick}>
-        <FormattedMessage id="tours.gotIt" defaultMessage="Got it" />
-      </Button>
-    </Flex>
+    <Button onClick={onClick}>
+      <FormattedMessage id="tours.gotIt" defaultMessage="Got it" />
+    </Button>
   );
 };
 
@@ -57,7 +55,7 @@ const tours = {
           />
           <Step.Content
             id="tours.contentTypeBuilder.CollectionTypes.content"
-            defaultMessage="Create and manage your content structure with collection types, single types and components."
+            defaultMessage="A content structure that can manage multiple entries, such as articles or products."
           />
           <Step.Actions />
         </Step.Root>
@@ -89,6 +87,7 @@ const tours = {
             defaultMessage="A reusable content structure that can be used across multiple content types, such as buttons, sliders or cards."
           />
           <Step.Actions>
+            <StepCount tourName="contentTypeBuilder" />
             <GotItAction
               onClick={() => dispatch({ type: 'next_step', payload: 'contentTypeBuilder' })}
             />
@@ -102,11 +101,11 @@ const tours = {
         <Step.Root side="right">
           <Step.Title
             id="tours.contentTypeBuilder.Finish.title"
-            defaultMessage="It’s time to create content!"
+            defaultMessage="It's time to create content!"
           />
           <Step.Content
             id="tours.contentTypeBuilder.Finish.content"
-            defaultMessage="Now that you created content types, you’ll be able to create content in the content manager."
+            defaultMessage="Now that you created content types, you'll be able to create content in the content manager."
           />
           <Step.Actions showStepCount={false} to="/content-manager" />
         </Step.Root>
@@ -117,9 +116,7 @@ const tours = {
   contentManager: createTour('contentManager', [
     {
       name: 'Introduction',
-      when: (completedActions) =>
-        completedActions.includes('didCreateContentTypeSchema') &&
-        !completedActions.includes('didCreateContent'),
+      when: (completedActions) => completedActions.includes('didCreateContentTypeSchema'),
       content: (Step) => (
         <Step.Root side="top" withArrow={false}>
           <Step.Title
@@ -157,6 +154,7 @@ const tours = {
             defaultMessage="Publish entries to make their content available through the Document Service API."
           />
           <Step.Actions>
+            <StepCount tourName="contentManager" />
             <GotItAction
               onClick={() => dispatch({ type: 'next_step', payload: 'contentManager' })}
             />
@@ -170,11 +168,11 @@ const tours = {
         <Step.Root side="right">
           <Step.Title
             id="tours.contentManager.FinalStep.title"
-            defaultMessage="It’s time to create API Tokens!"
+            defaultMessage="It's time to create API Tokens!"
           />
           <Step.Content
             id="tours.contentManager.FinalStep.content"
-            defaultMessage="Now that you’ve created and published content, time to create API tokens and set up permissions."
+            defaultMessage="Now that you've created and published content, time to create API tokens and set up permissions."
           />
           <Step.Actions showStepCount={false} to="/settings/api-tokens" />
         </Step.Root>
@@ -185,7 +183,6 @@ const tours = {
   apiTokens: createTour('apiTokens', [
     {
       name: 'Introduction',
-      when: (completedActions) => !completedActions.includes('didCreateApiToken'),
       content: (Step) => (
         <Step.Root sideOffset={-36} withArrow={false}>
           <Step.Title id="tours.apiTokens.Introduction.title" defaultMessage="API tokens" />
@@ -226,6 +223,7 @@ const tours = {
             defaultMessage="Make sure to do it now, you won’t be able to see it again. You’ll need to generate a new one if you lose it."
           />
           <Step.Actions>
+            <StepCount tourName="apiTokens" />
             <GotItAction onClick={() => dispatch({ type: 'next_step', payload: 'apiTokens' })} />
           </Step.Actions>
         </Step.Root>
@@ -238,7 +236,7 @@ const tours = {
         <Step.Root side="right" align="start">
           <Step.Title
             id="tours.apiTokens.FinalStep.title"
-            defaultMessage="It’s time to deploy your application!"
+            defaultMessage="It's time to deploy your application!"
           />
           <Step.Content
             id="tours.apiTokens.FinalStep.content"
@@ -278,15 +276,10 @@ type GuidedTourTooltipProps = {
   when?: (completedActions: ExtendedCompletedActions) => boolean;
 };
 
-const UnstableGuidedTourTooltip = ({ children, ...props }: GuidedTourTooltipProps) => {
-  const state = unstableUseGuidedTour('TooltipWrapper', (s) => s.state);
-  const hasFutureFlag = window.strapi.future.isEnabled('unstableGuidedTour');
+const GuidedTourTooltip = ({ children, ...props }: GuidedTourTooltipProps) => {
+  const state = useGuidedTour('TooltipWrapper', (s) => s.state);
 
   if (!state.enabled) {
-    return <>{children}</>;
-  }
-
-  if (!hasFutureFlag) {
     return <>{children}</>;
   }
 
@@ -312,8 +305,8 @@ const GuidedTourTooltipImpl = ({
 }: GuidedTourTooltipProps) => {
   const { data: guidedTourMeta } = useGetGuidedTourMetaQuery();
 
-  const state = unstableUseGuidedTour('UnstableGuidedTourTooltip', (s) => s.state);
-  const dispatch = unstableUseGuidedTour('UnstableGuidedTourTooltip', (s) => s.dispatch);
+  const state = useGuidedTour('GuidedTourTooltip', (s) => s.state);
+  const dispatch = useGuidedTour('GuidedTourTooltip', (s) => s.dispatch);
 
   const isCurrentStep = state.tours[tourName].currentStep === step;
   const isStepConditionMet = when ? when(state.completedActions) : true;
@@ -382,14 +375,14 @@ function createTour<const T extends ReadonlyArray<TourStep<string>>>(tourName: s
 
     acc[step.name as keyof Components] = ({ children }: { children: React.ReactNode }) => {
       return (
-        <UnstableGuidedTourTooltip
+        <GuidedTourTooltip
           tourName={tourName as ValidTourName}
           step={index}
           content={step.content}
           when={step.when}
         >
           {children}
-        </UnstableGuidedTourTooltip>
+        </GuidedTourTooltip>
       );
     };
 
