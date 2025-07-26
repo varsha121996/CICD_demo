@@ -34,6 +34,9 @@ type Action =
     }
   | {
       type: 'skip_all_tours';
+    }
+  | {
+      type: 'reset_all_tours';
     };
 
 type Tour = Record<ValidTourName, { currentStep: number; length: number; isCompleted: boolean }>;
@@ -43,10 +46,23 @@ type State = {
   completedActions: ExtendedCompletedActions;
 };
 
-const [GuidedTourProviderImpl, unstableUseGuidedTour] = createContext<{
+const [GuidedTourProviderImpl, useGuidedTour] = createContext<{
   state: State;
   dispatch: React.Dispatch<Action>;
-}>('UnstableGuidedTour');
+}>('GuidedTour');
+
+const getInitialTourState = (tours: Tours) => {
+  return Object.keys(tours).reduce((acc, tourName) => {
+    const tourLength = Object.keys(tours[tourName as ValidTourName]).length;
+    acc[tourName as ValidTourName] = {
+      currentStep: 0,
+      length: tourLength,
+      isCompleted: false,
+    };
+
+    return acc;
+  }, {} as Tour);
+};
 
 function reducer(state: State, action: Action): State {
   return produce(state, (draft) => {
@@ -67,31 +83,25 @@ function reducer(state: State, action: Action): State {
     if (action.type === 'skip_all_tours') {
       draft.enabled = false;
     }
+
+    if (action.type === 'reset_all_tours') {
+      draft.enabled = true;
+      draft.tours = getInitialTourState(guidedTours);
+      draft.completedActions = [];
+    }
   });
 }
 
 const STORAGE_KEY = 'STRAPI_GUIDED_TOUR';
-
-const UnstableGuidedTourContext = ({
+const GuidedTourContext = ({
   children,
   enabled = true,
 }: {
   children: React.ReactNode;
   enabled?: boolean;
 }) => {
-  const initialTourState = Object.keys(guidedTours).reduce((acc, tourName) => {
-    const tourLength = Object.keys(guidedTours[tourName as ValidTourName]).length;
-    acc[tourName as ValidTourName] = {
-      currentStep: 0,
-      length: tourLength,
-      isCompleted: false,
-    };
-
-    return acc;
-  }, {} as Tour);
-
   const [tours, setTours] = usePersistentState<State>(STORAGE_KEY, {
-    tours: initialTourState,
+    tours: getInitialTourState(guidedTours),
     enabled,
     completedActions: [],
   });
@@ -99,9 +109,7 @@ const UnstableGuidedTourContext = ({
 
   // Sync local storage
   React.useEffect(() => {
-    if (window.strapi.future.isEnabled('unstableGuidedTour')) {
-      setTours(state);
-    }
+    setTours(state);
   }, [state, setTours]);
 
   return (
@@ -112,4 +120,4 @@ const UnstableGuidedTourContext = ({
 };
 
 export type { Action, State, ValidTourName };
-export { UnstableGuidedTourContext, unstableUseGuidedTour, reducer };
+export { GuidedTourContext, useGuidedTour, reducer };

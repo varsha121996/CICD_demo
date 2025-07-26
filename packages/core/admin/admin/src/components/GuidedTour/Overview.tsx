@@ -4,9 +4,11 @@ import { useIntl } from 'react-intl';
 import { NavLink } from 'react-router-dom';
 import { styled, useTheme } from 'styled-components';
 
+import { useTracking } from '../../features/Tracking';
+import { useGetGuidedTourMetaQuery } from '../../services/admin';
 import { ConfirmDialog } from '../ConfirmDialog';
 
-import { type ValidTourName, unstableUseGuidedTour } from './Context';
+import { type ValidTourName, useGuidedTour } from './Context';
 
 /* -------------------------------------------------------------------------------------------------
  * Styled
@@ -136,20 +138,34 @@ const WaveIcon = () => {
   );
 };
 
-export const UnstableGuidedTourOverview = () => {
+export const GuidedTourHomepageOverview = () => {
   const { formatMessage } = useIntl();
-  const tours = unstableUseGuidedTour('Overview', (s) => s.state.tours);
-  const dispatch = unstableUseGuidedTour('Overview', (s) => s.dispatch);
-  const enabled = unstableUseGuidedTour('Overview', (s) => s.state.enabled);
-  const tourNames = Object.keys(tours) as ValidTourName[];
+  const { trackUsage } = useTracking();
 
+  const tours = useGuidedTour('Overview', (s) => s.state.tours);
+  const dispatch = useGuidedTour('Overview', (s) => s.dispatch);
+  const enabled = useGuidedTour('Overview', (s) => s.state.enabled);
+  const completedActions = useGuidedTour('Overview', (s) => s.state.completedActions);
+  const { data: guidedTourMeta } = useGetGuidedTourMetaQuery();
+
+  const tourNames = Object.keys(tours) as ValidTourName[];
   const completedTours = tourNames.filter((tourName) => tours[tourName].isCompleted);
   const completionPercentage =
     tourNames.length > 0 ? Math.round((completedTours.length / tourNames.length) * 100) : 0;
 
-  if (!enabled) {
+  if (!guidedTourMeta?.data.isFirstSuperAdminUser || !enabled) {
     return null;
   }
+
+  const handleConfirmDialog = () => {
+    trackUsage('didSkipGuidedTour', { name: 'all' });
+    dispatch({ type: 'skip_all_tours' });
+  };
+
+  const handleClickStrapiCloud = (tourName: ValidTourName) => {
+    trackUsage('didCompleteGuidedTour', { name: tourName });
+    dispatch({ type: 'skip_tour', payload: tourName });
+  };
 
   return (
     <Container tag="section" gap={0}>
@@ -157,7 +173,7 @@ export const UnstableGuidedTourOverview = () => {
       <ContentSection direction="column" gap={2} alignItems="start">
         <WaveIcon />
         <Flex direction="column" alignItems="start" gap={1} paddingTop={4}>
-          <Typography fontSize="20px" fontWeight="bold">
+          <Typography tag="h2" fontSize="20px" fontWeight="bold">
             {formatMessage({
               id: 'tours.overview.title',
               defaultMessage: 'Discover your application!',
@@ -172,7 +188,7 @@ export const UnstableGuidedTourOverview = () => {
         </Flex>
         <Flex
           direction="column"
-          alignItems="start"
+          alignItems="flex-start"
           width="100%"
           paddingTop={5}
           paddingBottom={8}
@@ -190,7 +206,7 @@ export const UnstableGuidedTourOverview = () => {
               })}
             </Button>
           </Dialog.Trigger>
-          <ConfirmDialog onConfirm={() => dispatch({ type: 'skip_all_tours' })}>
+          <ConfirmDialog onConfirm={handleConfirmDialog}>
             {formatMessage({
               id: 'tours.overview.close.description',
               defaultMessage: 'Are you sure you want to close the guided tour?',
@@ -207,13 +223,19 @@ export const UnstableGuidedTourOverview = () => {
             defaultMessage: 'Your tasks',
           })}
         </Typography>
-        <Box width="100%" borderColor="neutral150" marginTop={4} hasRadius>
+        <Box tag="ul" width="100%" borderColor="neutral150" marginTop={4} hasRadius>
           {TASK_CONTENT.map((task) => {
-            const tour = tours[task.tourName as ValidTourName];
+            const tourName = task.tourName as ValidTourName;
+            const tour = tours[tourName];
+            const isLinkDisabled =
+              tourName !== 'contentTypeBuilder' &&
+              !completedActions.includes('didCreateContentTypeSchema');
 
             return (
               <TourTaskContainer
-                key={task.tourName}
+                tag="li"
+                aria-label={formatMessage(task.title)}
+                key={tourName}
                 alignItems="center"
                 justifyContent="space-between"
               >
@@ -240,15 +262,22 @@ export const UnstableGuidedTourOverview = () => {
                     {task.isExternal ? (
                       <Link
                         isExternal
+                        disabled={isLinkDisabled}
                         href={task.link.to}
-                        onClick={() =>
-                          dispatch({ type: 'skip_tour', payload: task.tourName as ValidTourName })
-                        }
+                        onClick={() => handleClickStrapiCloud(task.tourName as ValidTourName)}
                       >
                         {formatMessage(task.link.label)}
                       </Link>
                     ) : (
-                      <Link endIcon={<ChevronRight />} to={task.link.to} tag={NavLink}>
+                      <Link
+                        endIcon={<ChevronRight />}
+                        disabled={isLinkDisabled}
+                        to={task.link.to}
+                        tag={NavLink}
+                        onClick={() =>
+                          trackUsage('didStartGuidedTourFromHomepage', { name: tourName })
+                        }
+                      >
                         {formatMessage(task.link.label)}
                       </Link>
                     )}
