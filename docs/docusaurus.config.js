@@ -109,7 +109,7 @@ const config = {
           {
             type: 'docSidebar',
             position: 'left',
-            sidebarId: 'exports',
+           // sidebarId: 'exports',
             label: 'Exports',
           },
           {
